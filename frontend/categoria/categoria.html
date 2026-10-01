@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categorias & Catálogo - Ateliê de Cerâmica</title>
+    <link rel="stylesheet" href="./categoria.css">
+    <!-- Fontes do Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Cabeçalho com Botão Voltar -->
+    <header>
+        <a href="../menu/menu.html" class="btn-voltar">← Menu</a>
+        <h1>Categorias & Catálogo</h1>
+        <p>Explore as coleções e filtre as peças artesanais do nosso ateliê</p>
+    </header>
+
+    <main class="container-master">
+        
+        <!-- Painel de Filtros e Busca -->
+        <section class="filter-section">
+            <div class="filter-container">
+                <!-- Busca por Nome do Produto -->
+                <div class="search-box">
+                    <label for="inputBusca">🔍 Buscar peça:</label>
+                    <input type="text" id="inputBusca" placeholder="Ex: Vaso, Xícara, Prato...">
+                </div>
+
+                <!-- Filtro por Categoria -->
+                <div class="select-box">
+                    <label for="selectCategoria">🏷️ Categoria:</label>
+                    <select id="selectCategoria">
+                        <option value="todas">Todas as Categorias</option>
+                        <!-- As categorias serão carregadas via JS dinamicamente -->
+                    </select>
+                </div>
+
+                <!-- Botão de Limpar Filtros -->
+                <div class="action-box">
+                    <button type="button" id="btnLimparFiltros" class="btn-secondary">Limpar Filtros</button>
+                </div>
+            </div>
+
+            <!-- Tags/Pills de Seleção Rápida -->
+            <div class="tags-container" id="tagsContainer">
+                <span class="tag-pill active" data-categoria="todas">✨ Todas</span>
+                <!-- Tags adicionadas dinamicamente via JS -->
+            </div>
+        </section>
+
+        <!-- Grade de Produtos Listados -->
+        <section class="catalog-section">
+            <div class="catalog-header">
+                <h2>Peças Encontradas</h2>
+                <span id="totalProdutos" class="badge-total">0 peças</span>
+            </div>
+
+            <div class="products-grid" id="productsGrid">
+                <!-- Exemplo de Card de Produto que será gerado pelo JS -->
+                <!-- 
+                <div class="product-card">
+                    <div class="product-tag">Vasos</div>
+                    <div class="product-icon">🏺</div>
+                    <h3>Vaso de Cerâmica Terracota</h3>
+                    <p class="product-desc">Feito à mão na roda de oleiro com acabamento fosco.</p>
+                    <div class="product-footer">
+                        <span class="product-price">R$ 120,00</span>
+                        <span class="product-stock">Estoque: 5</span>
+                    </div>
+                </div> 
+                -->
+            </div>
+
+            <!-- Mensagem caso nada seja encontrado -->
+            <div id="noResults" class="no-results" style="display: none;">
+                <span>🌸</span>
+                <p>Nenhuma peça encontrada com esses filtros.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Rodapé Semântico -->
+    <footer>
+        <p>&copy; 2026 Ateliê Cerâmica & Arte | Desenvolvido por Louise Marques Lau - M32A</p>
+    </footer>
+
+    <script src="./categoria.js" defer></script>
+</body>
+
+</html>

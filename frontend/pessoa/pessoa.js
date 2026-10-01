@@ -32,16 +32,19 @@ mostrarBotoes(true, false, false, false, false, false);
 bloquearCampos(false);
 
 function mostrarMensagem(texto, tipo = 'info') {
-    messageContainer.innerHTML = `<div class="message ${tipo}">${texto}</div>`;
+    messageContainer.style.display = 'block';
+    messageContainer.className = `message-container ${tipo}`;
+    messageContainer.innerHTML = `<div class="message">${texto}</div>`;
     setTimeout(() => {
+        messageContainer.style.display = 'none';
         messageContainer.innerHTML = '';
-    }, 3000);
+    }, 3500);
 }
 
 function bloquearCampos(bloquearPrimeiro) {
-    const inputs = document.querySelectorAll('input, select, checkbox');
+    const inputs = document.querySelectorAll('input, select, button');
     inputs.forEach((input, index) => {
-        if (index === 0) {
+        if (input.id === 'searchId' || input.id === 'btnBuscar') {
             input.disabled = bloquearPrimeiro;
         } else {
             input.disabled = !bloquearPrimeiro;
@@ -72,8 +75,11 @@ function mostrarBotoes(btBuscar, btIncluir, btAlterar, btExcluir, btSalvar, btCa
 
 function formatarData(dataString) {
     if (!dataString) return '';
-    const data = new Date(dataString);
-    return data.toLocaleDateString('pt-BR');
+    const partes = dataString.split('T')[0].split('-');
+    if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+    return new Date(dataString).toLocaleDateString('pt-BR');
 }
 
 function converterDataParaISO(dataString) {
@@ -132,7 +138,7 @@ async function funcaoEhCliente(pessoaId) {
 async function buscarPessoa() {
     const id = searchId.value.trim();
     if (!id) {
-        mostrarMensagem('Digite um CPF para buscar', 'warning');
+        mostrarMensagem('Digite um CPF/ID para buscar', 'warning');
         return;
     }
 
@@ -165,8 +171,7 @@ async function preencherFormulario(pessoa) {
     document.getElementById('nome_pessoa').value = pessoa.nome_pessoa || '';
 
     if (pessoa.data_nascimento_pessoa) {
-        const data = new Date(pessoa.data_nascimento_pessoa);
-        const dataFormatada = converterDataParaFormatoYYYYMMDD(data.toISOString());
+        const dataFormatada = converterDataParaFormatoYYYYMMDD(pessoa.data_nascimento_pessoa);
         document.getElementById('data_nascimento').value = dataFormatada;
     } else {
         document.getElementById('data_nascimento').value = '';
@@ -203,7 +208,7 @@ async function preencherFormulario(pessoa) {
 }
 
 async function incluirPessoa() {
-    mostrarMensagem('Digite os dados!', 'success');
+    mostrarMensagem('Preencha os dados e clique em Salvar!', 'info');
     currentPersonId = searchId.value;
     limparFormulario();
     searchId.value = currentPersonId;
@@ -214,7 +219,7 @@ async function incluirPessoa() {
 }
 
 async function alterarPessoa() {
-    mostrarMensagem('Digite os dados!', 'success');
+    mostrarMensagem('Edite os dados desejados e clique em Salvar!', 'info');
     bloquearCampos(true);
     mostrarBotoes(false, false, false, false, true, true);
     document.getElementById('nome_pessoa').focus();
@@ -222,7 +227,7 @@ async function alterarPessoa() {
 }
 
 async function excluirPessoa() {
-    mostrarMensagem('Excluindo pessoa...', 'info');
+    mostrarMensagem('Confirme a exclusão clicando em Salvar!', 'warning');
     currentPersonId = searchId.value;
     searchId.disabled = true;
     bloquearCampos(false);
@@ -330,7 +335,7 @@ async function salvarOperacao() {
                         const respCli = await fetch(caminhoCliente, { method: 'DELETE' });
                         const dataCli = await respCli.json().catch(() => ({}));
                         if (respCli.status === 409 || dataCli.sucesso === false) {
-                            alert(dataCli.mensagem || 'Não foi possível remover o cliente');
+                            mostrarMensagem(dataCli.mensagem || 'Não foi possível remover o cliente', 'warning');
                             document.getElementById('checkboxCliente').checked = true;
                         }
                     } catch (error) {
@@ -434,15 +439,15 @@ function renderizarTabelaPessoas(pessoas) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>
-                <button class="btn-id" onclick="selecionarPessoa(${pessoa.cpf_pessoa})">
+                <button class="btn-id" onclick="selecionarPessoa('${pessoa.cpf_pessoa}')">
                     ${pessoa.cpf_pessoa}
                 </button>
             </td>
-            <td>${pessoa.nome_pessoa}</td>
+            <td>${pessoa.nome_pessoa || ''}</td>
             <td>${formatarData(pessoa.data_nascimento_pessoa)}</td>                 
-            <td>${pessoa.endereco_pessoa}</td>
-            <td>${pessoa.senha_pessoa}</td>
-            <td>${pessoa.email_pessoa}</td>
+            <td>${pessoa.endereco_pessoa || ''}</td>
+            <td>••••••••</td>
+            <td>${pessoa.email_pessoa || ''}</td>
         `;
         pessoasTableBody.appendChild(row);
     });
@@ -456,7 +461,7 @@ async function selecionarPessoa(id) {
 // Busca os cargos no backend e preenche o select
 async function popularCargosSelect() {
     const selectCargo = document.getElementById('cargo_id_cargo');
-    selectCargo.innerHTML = '<option value="">Cargo</option>';
+    selectCargo.innerHTML = '<option value="">Selecione o Cargo</option>';
 
     try {
         const response = await fetch(`${API_BASE_URL}/cargo/listar`);

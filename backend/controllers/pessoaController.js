@@ -16,7 +16,7 @@ exports.listarPessoas = async (req, res) => {
     res.json({ sucesso: true, pessoas: result.rows });
   } catch (error) {
     console.error('Erro ao listar pessoas:', error);
-    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor' });
+    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor ao listar pessoas.' });
   }
 };
 
@@ -24,10 +24,10 @@ exports.criarPessoa = async (req, res) => {
   try {
     const { cpf_pessoa, nome_pessoa, data_nascimento_pessoa, endereco_pessoa, senha_pessoa, email_pessoa } = req.body;
 
-    if (!nome_pessoa || !endereco_pessoa || !senha_pessoa || !email_pessoa) {
+    if (!cpf_pessoa || !nome_pessoa || !endereco_pessoa || !senha_pessoa || !email_pessoa) {
       return res.status(400).json({
         sucesso: false,
-        mensagem: 'Nome, email, endereço e senha são obrigatórios'
+        mensagem: 'CPF, Nome, e-mail, endereço e senha são obrigatórios.'
       });
     }
 
@@ -35,43 +35,43 @@ exports.criarPessoa = async (req, res) => {
     if (!emailRegex.test(email_pessoa)) {
       return res.status(400).json({
         sucesso: false,
-        mensagem: 'Formato de email inválido'
+        mensagem: 'Formato de e-mail inválido.'
       });
     }
 
     const result = await query(
       'INSERT INTO pessoa (cpf_pessoa, nome_pessoa, data_nascimento_pessoa, endereco_pessoa, senha_pessoa, email_pessoa) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [cpf_pessoa, nome_pessoa, data_nascimento_pessoa, endereco_pessoa, senha_pessoa, email_pessoa]
+      [String(cpf_pessoa).trim(), nome_pessoa, data_nascimento_pessoa || null, endereco_pessoa, senha_pessoa, email_pessoa]
     );
 
     res.status(201).json({ sucesso: true, pessoa: result.rows[0] });
   } catch (error) {
     console.error('Erro ao criar pessoa:', error);
 
-    if (error.code === '23505' && error.constraint === 'pessoa_unique') {
+    if (error.code === '23505') {
       return res.status(400).json({
         sucesso: false,
-        mensagem: 'Email já está em uso'
+        mensagem: 'CPF ou E-mail já cadastrado no sistema.'
       });
     }
 
     if (error.code === '23502') {
       return res.status(400).json({
         sucesso: false,
-        mensagem: 'Dados obrigatórios não fornecidos'
+        mensagem: 'Dados obrigatórios não fornecidos.'
       });
     }
 
-    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor' });
+    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor ao criar pessoa.' });
   }
 };
 
 exports.obterPessoa = async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = req.params.id ? String(req.params.id).trim() : null;
 
-    if (isNaN(id)) {
-      return res.status(400).json({ sucesso: false, mensagem: 'CPF deve ser um número válido' });
+    if (!id) {
+      return res.status(400).json({ sucesso: false, mensagem: 'CPF inválido.' });
     }
 
     const result = await query(
@@ -80,19 +80,19 @@ exports.obterPessoa = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ sucesso: false, mensagem: 'Pessoa não encontrada' });
+      return res.status(404).json({ sucesso: false, mensagem: 'Pessoa não encontrada.' });
     }
 
     res.json({ sucesso: true, pessoa: result.rows[0] });
   } catch (error) {
     console.error('Erro ao obter pessoa:', error);
-    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor' });
+    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor.' });
   }
 };
 
 exports.atualizarPessoa = async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = req.params.id ? String(req.params.id).trim() : null;
     const { nome_pessoa, data_nascimento_pessoa, endereco_pessoa, senha_pessoa, email_pessoa } = req.body;
 
     if (email_pessoa) {
@@ -100,7 +100,7 @@ exports.atualizarPessoa = async (req, res) => {
       if (!emailRegex.test(email_pessoa)) {
         return res.status(400).json({
           sucesso: false,
-          mensagem: 'Formato de email inválido'
+          mensagem: 'Formato de e-mail inválido.'
         });
       }
     }
@@ -111,7 +111,7 @@ exports.atualizarPessoa = async (req, res) => {
     );
 
     if (existingPersonResult.rows.length === 0) {
-      return res.status(404).json({ sucesso: false, mensagem: 'Pessoa não encontrada' });
+      return res.status(404).json({ sucesso: false, mensagem: 'Pessoa não encontrada.' });
     }
 
     const currentPerson = existingPersonResult.rows[0];
@@ -132,20 +132,20 @@ exports.atualizarPessoa = async (req, res) => {
   } catch (error) {
     console.error('Erro ao atualizar pessoa:', error);
 
-    if (error.code === '23505' && error.constraint === 'pessoa_unique') {
+    if (error.code === '23505') {
       return res.status(400).json({
         sucesso: false,
-        mensagem: 'Email já está em uso por outra pessoa'
+        mensagem: 'E-mail já está em uso por outra pessoa.'
       });
     }
 
-    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor' });
+    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor.' });
   }
 };
 
 exports.deletarPessoa = async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = req.params.id ? String(req.params.id).trim() : null;
 
     const existingPersonResult = await query(
       'SELECT * FROM pessoa WHERE cpf_pessoa = $1',
@@ -153,7 +153,7 @@ exports.deletarPessoa = async (req, res) => {
     );
 
     if (existingPersonResult.rows.length === 0) {
-      return res.status(404).json({ sucesso: false, mensagem: 'Pessoa não encontrada' });
+      return res.status(404).json({ sucesso: false, mensagem: 'Pessoa não encontrada.' });
     }
 
     await query(
@@ -161,18 +161,18 @@ exports.deletarPessoa = async (req, res) => {
       [id]
     );
 
-    res.json({ sucesso: true, mensagem: 'Pessoa excluída com sucesso' });
+    res.json({ sucesso: true, mensagem: 'Pessoa excluída com sucesso.' });
   } catch (error) {
     console.error('Erro ao deletar pessoa:', error);
 
     if (error.code === '23503') {
       return res.status(400).json({
         sucesso: false,
-        mensagem: 'Não é possível deletar pessoa com dependências associadas'
+        mensagem: 'Não é possível deletar pessoa com registros vinculados (ex: Cliente, Funcionário, Pedidos).'
       });
     }
 
-    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor' });
+    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor.' });
   }
 };
 
@@ -181,7 +181,7 @@ exports.obterPessoaPorEmail = async (req, res) => {
     const { email_pessoa } = req.params;
 
     if (!email_pessoa) {
-      return res.status(400).json({ sucesso: false, mensagem: 'Email é obrigatório' });
+      return res.status(400).json({ sucesso: false, mensagem: 'E-mail é obrigatório.' });
     }
 
     const result = await query(
@@ -190,27 +190,27 @@ exports.obterPessoaPorEmail = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ sucesso: false, mensagem: 'Pessoa não encontrada' });
+      return res.status(404).json({ sucesso: false, mensagem: 'Pessoa não encontrada.' });
     }
 
     res.json({ sucesso: true, pessoa: result.rows[0] });
   } catch (error) {
     console.error('Erro ao obter pessoa por email:', error);
-    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor' });
+    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor.' });
   }
 };
 
 exports.atualizarSenha = async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = req.params.id ? String(req.params.id).trim() : null;
     const { senha_atual, nova_senha } = req.body;
 
-    if (isNaN(id)) {
-      return res.status(400).json({ sucesso: false, mensagem: 'ID deve ser um número válido' });
+    if (!id) {
+      return res.status(400).json({ sucesso: false, mensagem: 'CPF/ID inválido.' });
     }
 
     if (!senha_atual || !nova_senha) {
-      return res.status(400).json({ sucesso: false, mensagem: 'Senha atual e nova senha são obrigatórias' });
+      return res.status(400).json({ sucesso: false, mensagem: 'Senha atual e nova senha são obrigatórias.' });
     }
 
     const personResult = await query(
@@ -219,13 +219,13 @@ exports.atualizarSenha = async (req, res) => {
     );
 
     if (personResult.rows.length === 0) {
-      return res.status(404).json({ sucesso: false, mensagem: 'Pessoa não encontrada' });
+      return res.status(404).json({ sucesso: false, mensagem: 'Pessoa não encontrada.' });
     }
 
     const person = personResult.rows[0];
 
     if (person.senha_pessoa !== senha_atual) {
-      return res.status(400).json({ sucesso: false, mensagem: 'Senha atual incorreta' });
+      return res.status(400).json({ sucesso: false, mensagem: 'Senha atual incorreta.' });
     }
 
     const updateResult = await query(
@@ -236,6 +236,6 @@ exports.atualizarSenha = async (req, res) => {
     res.json({ sucesso: true, pessoa: updateResult.rows[0] });
   } catch (error) {
     console.error('Erro ao atualizar senha:', error);
-    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor' });
+    res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor.' });
   }
 };

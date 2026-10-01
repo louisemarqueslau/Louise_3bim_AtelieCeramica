@@ -1,332 +1,309 @@
-/* --- Reset Básico --- */
+/* Importando fontes fofas do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Quicksand:wght@400;500;600;700&display=swap');
+
+/* Reset básico */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* --- Variáveis de Cores --- */
-:root {
-    --cor-primaria: #2c3e50;
-    --cor-secundaria: #3498db;
-    --cor-secundaria-hover: #2980b9;
-    --cor-fundo: #f8f9fa;
-    --cor-texto: #333333;
-    --cor-aviso: #e74c3c;
-    --cor-borda: #ced4da;
-    --cor-branco: #ffffff;
-}
-
-/* --- Estrutura Geral --- */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--cor-fundo);
-    color: var(--cor-texto);
+    font-family: 'Quicksand', sans-serif;
+    /* Fundo suave rosa pastel com poás */
+    background-color: #fff5f7;
+    background-image: radial-gradient(#fcd5ce 1.2px, transparent 1.2px);
+    background-size: 24px 24px;
+    color: #6b4d57;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    justify-content: space-between;
 }
 
-/* --- Header Semântico --- */
+/* Header Fofo com botão voltar */
 header {
-    background-color: var(--cor-primaria);
-    color: var(--cor-branco);
-    padding: 2rem 1rem;
+    background: linear-gradient(135deg, #ffb5a7 0%, #fcd5ce 50%, #f8edeb 100%);
+    color: #6b3e4b;
     text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 3rem 1rem 2.5rem 1rem;
+    border-bottom: 5px dashed #f7cad0;
+    box-shadow: 0 8px 20px rgba(255, 181, 167, 0.3);
+    position: relative;
+}
+
+header::before {
+    content: "";
+    display: block;
+    font-size: 1.2rem;
+    margin-bottom: 0.4rem;
 }
 
 header h1 {
-    margin-bottom: 0.5rem;
-    font-size: 2.2rem;
+    font-family: 'Fredoka', cursive;
+    font-size: 2.5rem;
+    color: #844353;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0px #ffffff;
+    margin-bottom: 0.3rem;
 }
 
-/* --- Main (Conteúdo Central) --- */
-main {
-    flex: 1;
+header p {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #8f5d6a;
+}
+
+.btn-voltar {
+    position: absolute;
+    left: 2rem;
+    top: 2rem;
+    text-decoration: none;
+    color: #844353;
+    background-color: #ffffff;
+    border: 2px solid #fec5bb;
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    font-family: 'Fredoka', cursive;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 0px #fcd5ce;
+    transition: all 0.2s ease;
+}
+
+.btn-voltar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0px #f7cad0;
+    background-color: #ffe5ec;
+}
+
+/* Container Principal */
+.container-master {
+    max-width: 950px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem;
     width: 100%;
-    max-width: 1000px;
-    margin: 2rem auto;
-    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
-/* --- Seções em Cards --- */
+/* Seções Principais estilo Card 3D */
 .form-section,
 .list-section {
-    background-color: var(--cor-branco);
+    background-color: #ffffff;
+    border: 3px solid #fec5bb;
+    border-radius: 24px;
     padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    margin-bottom: 2rem;
+    box-shadow: 0 10px 0px #fcd5ce;
 }
 
-.form-section h2 {
-    margin-bottom: 1.5rem;
-    font-size: 1.4rem;
-    color: var(--cor-primaria);
-    border-bottom: 2px solid var(--cor-secundaria);
+.form-section h2,
+.list-section h3 {
+    font-family: 'Fredoka', cursive;
+    color: #9c495e;
+    font-size: 1.6rem;
+    margin-bottom: 1.2rem;
+    border-bottom: 3px dashed #f7cad0;
     padding-bottom: 0.5rem;
 }
 
-/* --- Busca e Agrupamento de Ações --- */
+/* Busca por ID */
 .search-container {
+    background-color: #fff0f3;
+    border: 2px dashed #ffb5a7;
+    padding: 1.2rem;
+    border-radius: 18px;
     margin-bottom: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
 }
 
 .search-container label {
-    font-weight: bold;
-    font-size: 0.95rem;
+    font-family: 'Fredoka', cursive;
+    color: #844353;
+    margin-bottom: 0.5rem;
+    display: block;
 }
 
 .search-input-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.6rem;
     align-items: center;
 }
 
-#searchId {
-    width: 200px;
-}
-
-/* --- Entradas de Texto / Dados --- */
-input[type="text"],
-input[type="number"],
-input[type="date"],
-input[type="password"],
-input[type="email"],
-select {
-    padding: 0.6rem;
-    border: 1px solid var(--cor-borda);
-    border-radius: 4px;
-    font-size: 1rem;
-    transition: border-color 0.3s;
-}
-
-input:focus,
-select:focus {
+.search-input-group input,
+.form-group input,
+.form-group select {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    padding: 0.65rem 1rem;
+    border: 2px solid #fec5bb;
+    border-radius: 14px;
     outline: none;
-    border-color: var(--cor-secundaria);
+    color: #6b4d57;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
 }
 
-/* --- Fieldset e Agrupamentos do Formulário --- */
-fieldset#formFields {
-    border: 1px solid var(--cor-borda);
-    border-radius: 6px;
+.search-input-group input:focus,
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #ffb5a7;
+    box-shadow: 0 0 0 3px #ffe5ec;
+}
+
+/* Botões Fofos estilo 3D Kawaii */
+button {
+    font-family: 'Fredoka', cursive;
+    font-size: 0.95rem;
+    padding: 0.65rem 1.2rem;
+    border-radius: 16px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+button:hover {
+    transform: translateY(-3px);
+}
+
+.btn-buscar { background-color: #844353;; border-color: #693542; box-shadow: 0 4px 0px #693542; }
+.btn-primary { background-color: #ffb5a7; border-color: #f79d8b; box-shadow: 0 4px 0px #f79d8b; }
+.btn-secondary { background-color: #b3c5d7; border-color: #92a8be; box-shadow: 0 4px 0px #92a8be; }
+.btn-danger { background-color: #f28482; border-color: #e06664; box-shadow: 0 4px 0px #e06664; }
+.btn-save { background-color: #84a59d; border-color: #6b8c84; box-shadow: 0 4px 0px #6b8c84; }
+.btn-cancel { background-color: #cdb4db; border-color: #b592c9; box-shadow: 0 4px 0px #b592c9; }
+
+button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* Fieldset */
+fieldset {
+    border: 2px dashed #ffb5a7;
+    border-radius: 18px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+    background-color: #fff9fa;
 }
 
-fieldset#formFields legend {
-    font-weight: bold;
-    color: var(--cor-primaria);
-    padding: 0 0.5rem;
+legend {
+    font-family: 'Fredoka', cursive;
+    font-size: 1.15rem;
+    color: #9c495e;
+    padding: 0 0.8rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    margin-bottom: 1rem;
+    gap: 0.4rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
 }
 
 .form-group label {
-    font-weight: bold;
-    margin-bottom: 0.3rem;
-    font-size: 0.95rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #844353;
 }
 
-.form-group input {
-    width: 100%;
-}
-
-/* --- Blocos Relacionados (Funcionário / Cliente) --- */
+/* Perfis 1:1 */
 .umParaum {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
 }
 
-.funcionario,
-.cliente {
-    background-color: var(--cor-fundo);
-    border: 1px solid var(--cor-borda);
-    padding: 1rem;
-    border-radius: 6px;
+.perfil-card {
+    background-color: #fff5f7;
+    border: 2px solid #fec5bb;
+    border-radius: 18px;
+    padding: 1.2rem;
+    box-shadow: 0 4px 0px #fcd5ce;
+}
+
+.checkbox-header {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    font-family: 'Fredoka', cursive;
+    font-size: 1.1rem;
+    color: #844353;
 }
 
-.funcionario span,
-.cliente span {
-    font-weight: bold;
-    color: var(--cor-primaria);
+.checkbox-header input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #ffb5a7;
 }
 
-.funcionario label,
-.cliente label {
-    font-weight: bold;
-    font-size: 0.9rem;
-}
-
-.funcionario input[type="checkbox"],
-.cliente input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
-
-/* --- Botões --- */
-button,
-input[type="button"] {
-    background-color: var(--cor-secundaria);
-    color: var(--cor-branco);
-    border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 0.9rem;
-    transition: background-color 0.3s;
-}
-
-button:hover,
-input[type="button"]:hover {
-    background-color: var(--cor-secundaria-hover);
-}
-
-.btn-primary {
-    background-color: var(--cor-secundaria);
-}
-
-.btn-secondary {
-    background-color: #7f8c8d;
-}
-.btn-secondary:hover {
-    background-color: #6c7a89;
-}
-
-.btn-danger {
-    background-color: var(--cor-aviso);
-}
-.btn-danger:hover {
-    background-color: #c0392b;
-}
-
-.btn-save {
-    background-color: #2ecc71;
-}
-.btn-save:hover {
-    background-color: #27ae60;
-}
-
-.btn-cancel {
-    background-color: #95a5a6;
-}
-.btn-cancel:hover {
-    background-color: #7f8c8d;
-}
-
-/* --- Listagem / Tabela --- */
+/* Tabela Fofa */
 .table-container {
     overflow-x: auto;
+    border-radius: 16px;
+    border: 2px solid #fec5bb;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 1rem;
+    text-align: left;
 }
 
-th, td {
-    border: 1px solid var(--cor-borda);
-    padding: 0.75rem;
-    text-align: left;
-    font-size: 0.95rem;
+thead {
+    background-color: #ffe5ec;
 }
 
 th {
-    background-color: var(--cor-primaria);
-    color: var(--cor-branco);
-    font-weight: bold;
+    padding: 1rem;
+    font-family: 'Fredoka', cursive;
+    color: #844353;
+    font-size: 1rem;
+    border-bottom: 2px solid #fec5bb;
 }
 
-tbody tr:nth-child(even) {
-    background-color: #f2f4f7;
+td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #f8edeb;
+    color: #7d5a65;
+    font-weight: 500;
 }
 
 tbody tr:hover {
-    background-color: #e9ecef;
+    background-color: #fff0f3;
 }
 
-/* --- Notificações --- */
-.message-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-}
-
-.message {
-    padding: 1rem 1.5rem;
-    border-radius: 4px;
-    font-weight: bold;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.message.success {
-    background-color: #d4edda;
-    color: #155724;
-    border-left: 5px solid #28a745;
-}
-
-.message.error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border-left: 5px solid var(--cor-aviso);
-}
-
-.message.info {
-    background-color: #d1ecf1;
-    color: #0c5460;
-    border-left: 5px solid var(--cor-secundaria);
-}
-
-/* --- Footer Semântico --- */
+/* Rodapé Fofinho */
 footer {
-    background-color: var(--cor-primaria);
-    color: var(--cor-branco);
+    background-color: #f8edeb;
+    border-top: 3px solid #fec5bb;
+    color: #8f5d6a;
     text-align: center;
-    padding: 1.5rem 1rem;
-    margin-top: 2rem;
+    padding: 1.5rem;
     font-size: 0.9rem;
+    font-weight: 600;
 }
 
-/* --- Responsividade --- */
-@media (max-width: 768px) {
-    .search-input-group {
-        flex-direction: column;
-        align-items: stretch;
-    }
+footer p::before,
+footer p::after {
+    content: " 🎀 ";
+}
 
-    #searchId {
-        width: 100%;
-    }
-
-    .funcionario,
-    .cliente {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .funcionario input,
-    .funcionario select,
-    .cliente input {
-        width: 100%;
-    }
+@media (max-width: 800px) {
+    header .btn-voltar { position: static; display: inline-block; margin-bottom: 1rem; }
+    .form-grid, .umParaum { grid-template-columns: 1fr; }
 }

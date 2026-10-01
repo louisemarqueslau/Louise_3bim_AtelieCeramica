@@ -1,0 +1,322 @@
+/* Importando fontes fofas do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Quicksand:wght@400;500;600;700&display=swap');
+
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Quicksand', sans-serif;
+    /* Fundo suave rosa pastel com poás */
+    background-color: #fff5f7;
+    background-image: radial-gradient(#fcd5ce 1.2px, transparent 1.2px);
+    background-size: 24px 24px;
+    color: #6b4d57;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Header Fofo com botão voltar */
+header {
+    background: linear-gradient(135deg, #ffb5a7 0%, #fcd5ce 50%, #f8edeb 100%);
+    color: #6b3e4b;
+    text-align: center;
+    padding: 3rem 1rem 2.5rem 1rem;
+    border-bottom: 5px dashed #f7cad0;
+    box-shadow: 0 8px 20px rgba(255, 181, 167, 0.3);
+    position: relative;
+}
+
+header::before {
+    content: " ";
+    display: block;
+    font-size: 1.2rem;
+    margin-bottom: 0.4rem;
+}
+
+header h1 {
+    font-family: 'Fredoka', cursive;
+    font-size: 2.5rem;
+    color: #844353;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0px #ffffff;
+    margin-bottom: 0.3rem;
+}
+
+header p {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #8f5d6a;
+}
+
+.btn-voltar {
+    position: absolute;
+    left: 2rem;
+    top: 2rem;
+    text-decoration: none;
+    color: #844353;
+    background-color: #ffffff;
+    border: 2px solid #fec5bb;
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    font-family: 'Fredoka', cursive;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 0px #fcd5ce;
+    transition: all 0.2s ease;
+}
+
+.btn-voltar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0px #f7cad0;
+    background-color: #ffe5ec;
+}
+
+/* Container Principal */
+.container-master {
+    max-width: 950px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Filtros Estilo Card 3D */
+.filter-section,
+.catalog-section {
+    background-color: #ffffff;
+    border: 3px solid #fec5bb;
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 10px 0px #fcd5ce;
+}
+
+.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: flex-end;
+}
+
+.search-box { flex: 2; min-width: 200px; }
+.select-box { flex: 1; min-width: 180px; }
+
+.filter-container label {
+    font-family: 'Fredoka', cursive;
+    color: #844353;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.filter-container input,
+.filter-container select {
+    width: 100%;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    padding: 0.65rem 1rem;
+    border: 2px solid #fec5bb;
+    border-radius: 14px;
+    outline: none;
+    color: #6b4d57;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.filter-container input:focus,
+.filter-container select:focus {
+    border-color: #ffb5a7;
+    box-shadow: 0 0 0 3px #ffe5ec;
+}
+
+.btn-secondary {
+    font-family: 'Fredoka', cursive;
+    font-size: 0.95rem;
+    padding: 0.65rem 1.2rem;
+    border-radius: 16px;
+    border: 2px solid #844353;
+    background-color: #844353;
+    box-shadow: 0 4px 0px #844353;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0px #5f2f3b;
+}
+
+/* Tags / Pills de Filtro Rápido */
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    border-top: 2px dashed #f7cad0;
+    padding-top: 1.2rem;
+    margin-top: 1.2rem;
+}
+
+.tag-pill {
+    background-color: #fff0f3;
+    border: 2px solid #fec5bb;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-family: 'Fredoka', cursive;
+    font-size: 0.85rem;
+    color: #844353;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tag-pill:hover,
+.tag-pill.active {
+    background-color: #ffb5a7;
+    color: #ffffff;
+    border-color: #f79d8b;
+    box-shadow: 0 3px 0px #f79d8b;
+}
+
+/* Cabeçalho do Catálogo */
+.catalog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 3px dashed #f7cad0;
+    padding-bottom: 0.8rem;
+}
+
+.catalog-header h2 {
+    font-family: 'Fredoka', cursive;
+    color: #9c495e;
+    font-size: 1.6rem;
+}
+
+.badge-total {
+    background-color: #ffe5ec;
+    border: 2px solid #fec5bb;
+    color: #844353;
+    font-family: 'Fredoka', cursive;
+    padding: 0.3rem 0.8rem;
+    border-radius: 14px;
+    font-size: 0.9rem;
+}
+
+/* Cards dos Produtos */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.8rem;
+}
+
+.product-card {
+    background-color: #ffffff;
+    border: 3px solid #fec5bb;
+    border-radius: 22px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 8px 0px #fcd5ce;
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 0px #f8edeb;
+    border-color: #ffb5a7;
+}
+
+.product-tag {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background-color: #ffe5ec;
+    border: 1px solid #fec5bb;
+    color: #844353;
+    font-family: 'Fredoka', cursive;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+}
+
+.product-icon {
+    font-size: 2.8rem;
+    margin-bottom: 0.6rem;
+    text-align: center;
+}
+
+.product-card h3 {
+    font-family: 'Fredoka', cursive;
+    font-size: 1.2rem;
+    color: #9c495e;
+    margin-bottom: 0.4rem;
+}
+
+.product-desc {
+    font-size: 0.85rem;
+    color: #7d5a65;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+}
+
+.product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 2px dashed #f8edeb;
+    padding-top: 0.8rem;
+}
+
+.product-price {
+    font-family: 'Fredoka', cursive;
+    font-size: 1.15rem;
+    color: #844353;
+}
+
+.product-stock {
+    font-size: 0.8rem;
+    color: #8f5d6a;
+    font-weight: 700;
+}
+
+.no-results {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #8f5d6a;
+    font-family: 'Fredoka', cursive;
+}
+
+.no-results span {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* Rodapé Fofinho */
+footer {
+    background-color: #f8edeb;
+    border-top: 3px solid #fec5bb;
+    color: #8f5d6a;
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+footer p::before,
+footer p::after {
+    content: " 🎀 ";
+}
+
+@media (max-width: 800px) {
+    header .btn-voltar { position: static; display: inline-block; margin-bottom: 1rem; }
+    .filter-container { flex-direction: column; align-items: stretch; }
+}

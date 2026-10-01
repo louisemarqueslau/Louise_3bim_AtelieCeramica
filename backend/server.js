@@ -3,51 +3,46 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-// Importa a função de consulta do banco
+// Importa a função de consulta do banco de dados
 const { query } = require('./database');
 
-// Importa as rotas
+// --- Importação de Rotas ---
 const produtoRoutes = require('./routes/produtoRoutes');
 const unidadeMedidaRoutes = require('./routes/unidadeMedidaRoutes');
 const cargoRoutes = require('./routes/cargoRoutes');
+const clienteRoutes = require('./routes/clienteRoutes');
+const funcionarioRoutes = require('./routes/funcionarioRoutes');
+const pessoaRoutes = require('./routes/pessoaRoutes');
 
 const app = express();
 
+// --- Middlewares Globais ---
 app.use(cors());
 app.use(express.json());
 
-// Servir imagens estáticas
+// Servir imagens e arquivos estáticos
 app.use('/imagens', express.static(path.join(__dirname, '../imagens')));
 
-// Definir Rotas
+// --- Definição das Rotas da API ---
 app.use('/produto', produtoRoutes);
 app.use('/unidade_medida', unidadeMedidaRoutes);
-
-
-//clienteRoutes tem que vir antes de pessoaRoutes
-const clienteRoutes = require('./routes/clienteRoutes');
-app.use('/cliente', clienteRoutes);
-
-//funcionarioRoutes tem que vir antes de pessoaRoutes
-const funcionarioRoutes = require('./routes/funcionarioRoutes');
-app.use('/funcionario', funcionarioRoutes);
-
-const pessoaRoutes = require('./routes/pessoaRoutes');
-app.use('/pessoa', pessoaRoutes);
-
-
 app.use('/cargo', cargoRoutes);
 
+// Rotas de Pessoas e suas Especializações (1:1)
+app.use('/cliente', clienteRoutes);
+app.use('/funcionario', funcionarioRoutes);
+app.use('/pessoa', pessoaRoutes);
+
+// --- Porta e Inicialização do Servidor ---
 const PORT = process.env.PORT || 3001;
 
-// Inicializa o servidor e testa o PostgreSQL
 app.listen(PORT, async () => {
     console.log(`\n=================================`);
     console.log(`🚀 Servidor executando na porta ${PORT}`);
     
     try {
         await query('SELECT 1');
-        console.log(`✅ Banco de Dados  ${process.env.DB_NAME} conectado com sucesso!`);
+        console.log(`✅ Banco de Dados '${process.env.DB_NAME}' conectado com sucesso!`);
     } catch (error) {
         console.error(`❌ FALHA NA CONEXÃO COM O BANCO DE DADOS:`);
         console.error(`   Motivo: ${error.message}`);
