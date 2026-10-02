@@ -29,7 +29,7 @@ btnCancelar.addEventListener('click', cancelarOperacao);
 btnSalvar.addEventListener('click', salvarOperacao);
 
 mostrarBotoes(true, false, false, false, false, false);
-bloquearCampos(false);
+desbloquearFormulario(false);
 
 function mostrarMensagem(texto, tipo = 'info') {
     messageContainer.style.display = 'block';
@@ -41,15 +41,16 @@ function mostrarMensagem(texto, tipo = 'info') {
     }, 3500);
 }
 
-function bloquearCampos(bloquearPrimeiro) {
-    const inputs = document.querySelectorAll('input, select, button');
-    inputs.forEach((input, index) => {
-        if (input.id === 'searchId' || input.id === 'btnBuscar') {
-            input.disabled = bloquearPrimeiro;
-        } else {
-            input.disabled = !bloquearPrimeiro;
+// CORREÇÃO: Garante que os campos do formulário sejam ativados/desativados sem travar os botões de controle
+function desbloquearFormulario(habilitar) {
+    const inputs = document.querySelectorAll('input, select');
+    inputs.forEach((input) => {
+        if (input.id !== 'searchId') {
+            input.disabled = !habilitar;
         }
     });
+    searchId.disabled = habilitar;
+    btnBuscar.disabled = habilitar;
 }
 
 function limparFormulario() {
@@ -142,8 +143,6 @@ async function buscarPessoa() {
         return;
     }
 
-    bloquearCampos(false);
-    searchId.focus();
     try {
         const response = await fetch(`${API_BASE_URL}/pessoa/${id}`);
         const data = await response.json();
@@ -157,7 +156,6 @@ async function buscarPessoa() {
             searchId.value = id;
             mostrarBotoes(true, true, false, false, false, false);
             mostrarMensagem('Pessoa não encontrada. Você pode incluir uma nova pessoa.', 'info');
-            bloquearCampos(false);
         }
     } catch (error) {
         console.error('Erro:', error);
@@ -184,66 +182,59 @@ async function preencherFormulario(pessoa) {
     const ehFunc = await funcaoEhFuncionario(currentPersonId);
     if (ehFunc.ehFuncionario) {
         document.getElementById('checkboxFuncionario').checked = true;
-        document.getElementById('cargo_id_cargo').value = ehFunc.cargo_id_cargo;
-        document.getElementById('salario_funcionario').value = ehFunc.salario_funcionario;
-        document.getElementById('porcentagem_comissao_funcionario').value = ehFunc.porcentagem_comissao_funcionario;
+        document.getElementById('cargo_id_cargo').value = ehFunc.cargo_id_cargo || '';
+        document.getElementById('salario_funcionario').value = ehFunc.salario_funcionario || '';
+        document.getElementById('porcentagem_comissao_funcionario').value = ehFunc.porcentagem_comissao_funcionario || '';
     } else {
         document.getElementById('checkboxFuncionario').checked = false;
-        document.getElementById('cargo_id_cargo').value = '';
-        document.getElementById('salario_funcionario').value = '';
-        document.getElementById('porcentagem_comissao_funcionario').value = '';
     }
 
     // Verifica cliente
     const ehCli = await funcaoEhCliente(currentPersonId);
     if (ehCli.ehCliente) {
         document.getElementById('checkboxCliente').checked = true;
-        document.getElementById('renda_cliente').value = ehCli.renda_cliente;
+        document.getElementById('renda_cliente').value = ehCli.renda_cliente || '';
         document.getElementById('data_cadastro_cliente').value = converterDataParaFormatoYYYYMMDD(ehCli.data_cadastro_cliente);
     } else {
         document.getElementById('checkboxCliente').checked = false;
-        document.getElementById('renda_cliente').value = '';
-        document.getElementById('data_cadastro_cliente').value = '';
     }
 }
 
-async function incluirPessoa() {
-    mostrarMensagem('Preencha os dados e clique em Salvar!', 'info');
-    currentPersonId = searchId.value;
+function incluirPessoa() {
+    operacao = 'incluir';
+    currentPersonId = searchId.value.trim();
     limparFormulario();
     searchId.value = currentPersonId;
-    bloquearCampos(true);
+    desbloquearFormulario(true);
     mostrarBotoes(false, false, false, false, true, true);
     document.getElementById('nome_pessoa').focus();
-    operacao = 'incluir';
+    mostrarMensagem('Preencha os dados e clique em Salvar!', 'info');
 }
 
-async function alterarPessoa() {
-    mostrarMensagem('Edite os dados desejados e clique em Salvar!', 'info');
-    bloquearCampos(true);
-    mostrarBotoes(false, false, false, false, true, true);
-    document.getElementById('nome_pessoa').focus();
+function alterarPessoa() {
     operacao = 'alterar';
+    desbloquearFormulario(true);
+    mostrarBotoes(false, false, false, false, true, true);
+    document.getElementById('nome_pessoa').focus();
+    mostrarMensagem('Edite os dados desejados e clique em Salvar!', 'info');
 }
 
-async function excluirPessoa() {
-    mostrarMensagem('Confirme a exclusão clicando em Salvar!', 'warning');
-    currentPersonId = searchId.value;
-    searchId.disabled = true;
-    bloquearCampos(false);
-    mostrarBotoes(false, false, false, false, true, true);
+function excluirPessoa() {
     operacao = 'excluir';
+    currentPersonId = searchId.value.trim();
+    desbloquearFormulario(false);
+    mostrarBotoes(false, false, false, false, true, true);
+    mostrarMensagem('Confirme a exclusão clicando em Salvar!', 'warning');
 }
 
 async function salvarOperacao() {
-    const formData = new FormData(form);
     const pessoa = {
         cpf_pessoa: searchId.value.trim(),
-        nome_pessoa: formData.get('nome_pessoa'),
-        data_nascimento_pessoa: converterDataParaISO(formData.get('data_nascimento')) || null,
-        endereco_pessoa: formData.get('endereco_pessoa'),
-        senha_pessoa: formData.get('senha_pessoa'),
-        email_pessoa: formData.get('email_pessoa')
+        nome_pessoa: document.getElementById('nome_pessoa').value,
+        data_nascimento_pessoa: converterDataParaISO(document.getElementById('data_nascimento').value),
+        endereco_pessoa: document.getElementById('endereco_pessoa').value,
+        senha_pessoa: document.getElementById('senha_pessoa').value,
+        email_pessoa: document.getElementById('email_pessoa').value
     };
 
     let funcionario = null;
@@ -251,11 +242,10 @@ async function salvarOperacao() {
         funcionario = {
             pessoa_cpf_pessoa: pessoa.cpf_pessoa,
             salario_funcionario: document.getElementById('salario_funcionario').value,
-            cargo_id_cargo: parseInt(document.getElementById('cargo_id_cargo').value, 10),
+            cargo_id_cargo: parseInt(document.getElementById('cargo_id_cargo').value, 10) || null,
             porcentagem_comissao_funcionario: document.getElementById('porcentagem_comissao_funcionario').value
         };
     }
-    const caminhoFunc = `${API_BASE_URL}/funcionario/${currentPersonId}`;
 
     let cliente = null;
     if (document.getElementById('checkboxCliente').checked) {
@@ -265,154 +255,80 @@ async function salvarOperacao() {
             data_cadastro_cliente: document.getElementById('data_cadastro_cliente').value || null
         };
     }
-    const caminhoCliente = `${API_BASE_URL}/cliente/${currentPersonId}`;
 
     try {
         let respPessoa = null;
-        switch (operacao) {
-            case 'incluir':
-                respPessoa = await fetch(`${API_BASE_URL}/pessoa`, {
+        if (operacao === 'incluir') {
+            respPessoa = await fetch(`${API_BASE_URL}/pessoa`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pessoa)
+            });
+            const dataPessoaInc = await respPessoa.json();
+
+            if (!dataPessoaInc.sucesso) {
+                throw new Error(dataPessoaInc.mensagem || 'Erro ao criar pessoa');
+            }
+
+            if (funcionario) {
+                await fetch(`${API_BASE_URL}/funcionario`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(pessoa)
+                    body: JSON.stringify(funcionario)
                 });
-                const dataPessoaInc = await respPessoa.json();
+            }
 
-                if (!dataPessoaInc.sucesso) {
-                    throw new Error('Erro ao criar pessoa: ' + (dataPessoaInc.mensagem || respPessoa.status));
-                }
-
-                if (funcionario) {
-                    await fetch(`${API_BASE_URL}/funcionario`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(funcionario)
-                    });
-                }
-
-                if (cliente) {
-                    await fetch(`${API_BASE_URL}/cliente`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(cliente)
-                    });
-                }
-
-                mostrarMensagem('Pessoa incluída com sucesso!', 'success');
-                limparFormulario();
-                carregarPessoas();
-                break;
-
-            case 'alterar':
-                respPessoa = await fetch(`${API_BASE_URL}/pessoa/${currentPersonId}`, {
-                    method: 'PUT',
+            if (cliente) {
+                await fetch(`${API_BASE_URL}/cliente`, {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(pessoa)
+                    body: JSON.stringify(cliente)
                 });
-                const dataPessoaAlt = await respPessoa.json();
-                if (!dataPessoaAlt.sucesso) {
-                    throw new Error('Erro ao alterar pessoa: ' + (dataPessoaAlt.mensagem || respPessoa.status));
-                }
+            }
 
-                // Trata Cliente
-                if (document.getElementById('checkboxCliente').checked) {
-                    const respVerifCli = await fetch(caminhoCliente);
-                    if (respVerifCli.status === 404) {
-                        await fetch(`${API_BASE_URL}/cliente`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(cliente)
-                        });
-                    } else {
-                        await fetch(caminhoCliente, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(cliente)
-                        });
-                    }
-                } else {
-                    try {
-                        const respCli = await fetch(caminhoCliente, { method: 'DELETE' });
-                        const dataCli = await respCli.json().catch(() => ({}));
-                        if (respCli.status === 409 || dataCli.sucesso === false) {
-                            mostrarMensagem(dataCli.mensagem || 'Não foi possível remover o cliente', 'warning');
-                            document.getElementById('checkboxCliente').checked = true;
-                        }
-                    } catch (error) {
-                        console.error('Erro ao excluir cliente:', error);
-                    }
-                }
+            mostrarMensagem('Pessoa incluída com sucesso!', 'success');
 
-                // Trata Funcionário
-                if (document.getElementById('checkboxFuncionario').checked) {
-                    const respVerifFunc = await fetch(caminhoFunc);
-                    const dataVerifFunc = await respVerifFunc.json().catch(() => ({}));
+        } else if (operacao === 'alterar') {
+            respPessoa = await fetch(`${API_BASE_URL}/pessoa/${currentPersonId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pessoa)
+            });
+            const dataPessoaAlt = await respPessoa.json();
+            if (!dataPessoaAlt.sucesso) {
+                throw new Error(dataPessoaAlt.mensagem || 'Erro ao alterar pessoa');
+            }
 
-                    if (respVerifFunc.status === 404 || !dataVerifFunc.sucesso) {
-                        await fetch(`${API_BASE_URL}/funcionario`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(funcionario)
-                        });
-                    } else {
-                        await fetch(caminhoFunc, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(funcionario)
-                        });
-                    }
-                } else {
-                    const respVerifFunc = await fetch(caminhoFunc);
-                    const dataVerifFunc = await respVerifFunc.json().catch(() => ({}));
-                    if (respVerifFunc.status === 200 && dataVerifFunc.sucesso) {
-                        await fetch(caminhoFunc, { method: 'DELETE' });
-                    }
-                }
+            mostrarMensagem('Pessoa alterada com sucesso!', 'success');
 
-                mostrarMensagem('Pessoa alterada com sucesso!', 'success');
-                limparFormulario();
-                carregarPessoas();
-                break;
+        } else if (operacao === 'excluir') {
+            const respDelPessoa = await fetch(`${API_BASE_URL}/pessoa/${currentPersonId}`, { method: 'DELETE' });
+            const dataDelPessoa = await respDelPessoa.json();
 
-            case 'excluir':
-                const respCliDel = await fetch(caminhoCliente);
-                if (respCliDel.status === 200) {
-                    await fetch(caminhoCliente, { method: 'DELETE' });
-                }
+            if (!dataDelPessoa.sucesso) {
+                throw new Error(dataDelPessoa.mensagem || 'Erro ao excluir pessoa');
+            }
 
-                const respFuncDel = await fetch(caminhoFunc);
-                const dataFuncDel = await respFuncDel.json().catch(() => ({}));
-                if (respFuncDel.status === 200 && dataFuncDel.sucesso) {
-                    await fetch(caminhoFunc, { method: 'DELETE' });
-                }
-
-                const respDelPessoa = await fetch(`${API_BASE_URL}/pessoa/${currentPersonId}`, { method: 'DELETE' });
-                const dataDelPessoa = await respDelPessoa.json();
-
-                if (!dataDelPessoa.sucesso) {
-                    throw new Error('Erro ao excluir pessoa: ' + (dataDelPessoa.mensagem || respDelPessoa.status));
-                }
-
-                mostrarMensagem('Pessoa excluída com sucesso!', 'success');
-                limparFormulario();
-                carregarPessoas();
-                break;
+            mostrarMensagem('Pessoa excluída com sucesso!', 'success');
         }
+
+        limparFormulario();
+        carregarPessoas();
     } catch (error) {
         console.error('Erro salvarOperacao:', error);
         mostrarMensagem(error.message || 'Erro ao processar operação', 'error');
     } finally {
         mostrarBotoes(true, false, false, false, false, false);
-        bloquearCampos(false);
-        document.getElementById('searchId').focus();
+        desbloquearFormulario(false);
+        searchId.focus();
     }
 }
 
 function cancelarOperacao() {
     limparFormulario();
     mostrarBotoes(true, false, false, false, false, false);
-    bloquearCampos(false);
-    document.getElementById('searchId').focus();
+    desbloquearFormulario(false);
+    searchId.focus();
     mostrarMensagem('Operação cancelada', 'info');
 }
 
@@ -423,12 +339,9 @@ async function carregarPessoas() {
 
         if (response.ok && data.sucesso) {
             renderizarTabelaPessoas(data.pessoas);
-        } else {
-            throw new Error(data.mensagem || 'Erro ao carregar pessoas');
         }
     } catch (error) {
         console.error('Erro:', error);
-        mostrarMensagem('Erro ao carregar lista de pessoas', 'error');
     }
 }
 
@@ -458,7 +371,6 @@ async function selecionarPessoa(id) {
     await buscarPessoa();
 }
 
-// Busca os cargos no backend e preenche o select
 async function popularCargosSelect() {
     const selectCargo = document.getElementById('cargo_id_cargo');
     selectCargo.innerHTML = '<option value="">Selecione o Cargo</option>';
@@ -474,14 +386,8 @@ async function popularCargosSelect() {
                 option.textContent = cargo.nome_cargo;
                 selectCargo.appendChild(option);
             });
-        } else {
-            console.error('Erro ao listar cargos:', data.mensagem);
         }
     } catch (error) {
         console.error('Falha ao popular o menu de cargos:', error);
-        const optionErro = document.createElement('option');
-        optionErro.textContent = 'Erro ao carregar cargos';
-        optionErro.disabled = true;
-        selectCargo.appendChild(optionErro);
     }
 }

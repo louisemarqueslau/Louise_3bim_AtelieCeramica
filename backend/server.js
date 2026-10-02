@@ -8,6 +8,7 @@ const { query } = require('./database');
 
 // --- Importação de Rotas ---
 const produtoRoutes = require('./routes/produtoRoutes');
+const categoriaRoutes = require('./routes/categoriaRoutes'); // <--- ADICIONADO
 const unidadeMedidaRoutes = require('./routes/unidadeMedidaRoutes');
 const cargoRoutes = require('./routes/cargoRoutes');
 const clienteRoutes = require('./routes/clienteRoutes');
@@ -21,10 +22,14 @@ app.use(cors());
 app.use(express.json());
 
 // Servir imagens e arquivos estáticos
-app.use('/imagens', express.static(path.join(__dirname, '../imagens')));
+// ... tuas outras configurações e rotas ...
+
+// Servir a pasta de imagens estáticas para o navegador conseguir ler
+app.use('/imagens', express.static(path.join(__dirname, 'imagens')));
 
 // --- Definição das Rotas da API ---
 app.use('/produto', produtoRoutes);
+app.use('/categoria', categoriaRoutes); // <--- ADICIONADO
 app.use('/unidade_medida', unidadeMedidaRoutes);
 app.use('/cargo', cargoRoutes);
 
@@ -46,7 +51,6 @@ app.listen(PORT, async () => {
     } catch (error) {
         console.error(`❌ FALHA NA CONEXÃO COM O BANCO DE DADOS:`);
         console.error(`   Motivo: ${error.message}`);
-        console.error(`👉 Ajuste o arquivo .env com a senha correta do seu PostgreSQL.`);
     }
     console.log(`=================================\n`);
 });

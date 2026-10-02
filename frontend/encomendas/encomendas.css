@@ -1,0 +1,195 @@
+/* Importando fontes fofas e elegantes do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Quicksand:wght@400;500;600;700&display=swap');
+
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Quicksand', sans-serif;
+    /* Fundo suave rosa pastel com pequenos poás (bolinhas) decorativos */
+    background-color: #fff5f7;
+    background-image: radial-gradient(#fcd5ce 1.2px, transparent 1.2px);
+    background-size: 24px 24px;
+    color: #6b4d57;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Header Fofo */
+header {
+    background: linear-gradient(135deg, #ffb5a7 0%, #fcd5ce 50%, #f8edeb 100%);
+    color: #6b3e4b;
+    text-align: center;
+    padding: 3rem 1rem 2.5rem 1rem;
+    border-bottom: 5px dashed #f7cad0;
+    box-shadow: 0 8px 20px rgba(255, 181, 167, 0.3);
+    position: relative;
+}
+
+/* Botão de Voltar estilo fofo */
+.btn-voltar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    text-decoration: none;
+    color: #844353;
+    font-weight: 700;
+    background-color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 2px solid #fec5bb;
+    box-shadow: 0 4px 0px #fcd5ce;
+    transition: all 0.2s ease;
+}
+
+.btn-voltar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0px #fec5bb;
+    background-color: #fffcfc;
+}
+
+header h1 {
+    font-family: 'Fredoka', cursive;
+    font-size: 2.5rem;
+    color: #844353;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0px #ffffff;
+    margin-bottom: 0.3rem;
+}
+
+header p {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #8f5d6a;
+}
+
+/* Container Principal */
+.container-master {
+    max-width: 650px;
+    margin: 3.5rem auto;
+    padding: 0 1.5rem;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Card Estilo "Kawaii/Fofo" de Em Breve */
+.card-em-breve {
+    background-color: #ffffff;
+    border: 3px solid #fec5bb;
+    border-radius: 24px;
+    padding: 3rem 2rem;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 10px 0px #fcd5ce;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.card-em-breve::before {
+    content: "✨";
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.5rem;
+    opacity: 0.8;
+}
+
+/* Bolinha do Ícone */
+.card-icon {
+    font-size: 3rem;
+    background-color: #ffe5ec;
+    border: 2px dashed #ffb5a7;
+    width: 95px;
+    height: 95px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+    animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+}
+
+/* Badge Em Breve */
+.badge-em-breve {
+    background-color: #ffe5ec;
+    color: #9c495e;
+    font-family: 'Fredoka', cursive;
+    font-size: 1rem;
+    padding: 6px 18px;
+    border-radius: 20px;
+    border: 2px solid #ffb5a7;
+    margin-bottom: 1.2rem;
+}
+
+.card-em-breve h2 {
+    font-family: 'Fredoka', cursive;
+    font-size: 1.8rem;
+    color: #9c495e;
+    margin-bottom: 1rem;
+}
+
+.descricao {
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: #7d5a65;
+    font-weight: 500;
+    margin-bottom: 0.8rem;
+}
+
+.subtext {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: #8f5d6a;
+    margin-bottom: 2rem;
+}
+
+/* Botão Principal */
+.btn-principal {
+    display: inline-block;
+    background-color: #ffb5a7;
+    color: #6b3e4b;
+    font-family: 'Fredoka', cursive;
+    font-size: 1.1rem;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 20px;
+    border: 2px solid #fec5bb;
+    box-shadow: 0 5px 0px #fcd5ce;
+    transition: all 0.2s ease;
+}
+
+.btn-principal:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 0px #f8edeb;
+    background-color: #ffa494;
+}
+
+/* Rodapé Fofinho */
+footer {
+    background-color: #f8edeb;
+    border-top: 3px solid #fec5bb;
+    color: #8f5d6a;
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+footer p::before,
+footer p::after {
+    content: " 🎀 ";
+}

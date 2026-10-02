@@ -1,224 +1,363 @@
-const URL_API = 'http://localhost:3001';
-const SILHUETA_URL = `${URL_API}/imagens/silhueta.png`;
+const API_BASE_URL = 'http://localhost:3001';
 
-let oQueEstaFazendo = '';
-let produto = null;
-bloquearAtributos(true);
+// Variável para controlar a operação atual ('inserir', 'alterar', 'excluir')
+let operacaoAtual = null;
 
-async function inicializar() {
-    await carregarUnidadesMedida();
-    await listar();
-}
+document.addEventListener('DOMContentLoaded', () => {
+    carregarCategoriasEUnidades();
+    carregarProdutos();
+});
 
-async function carregarUnidadesMedida() {
-    const select = document.getElementById("selectId_unidade_medida");
+// 1. Carrega o Select de Unidades de Medida / Categorias
+async function carregarCategoriasEUnidades() {
+    const selectUnidade = document.getElementById('selectId_unidade_medida');
+    if (!selectUnidade) return;
+
     try {
-        const resposta = await fetch(`${URL_API}/unidade_medida/listar`);
-        const data = await resposta.json();
-        if (data.sucesso) {
-            select.innerHTML = '<option value="">-- Selecione uma Unidade --</option>';
-            data.unidades.forEach(um => {
-                select.innerHTML += `<option value="${um.id_unidade_medida}">${um.id_unidade_medida} - ${um.nome_unidade_medida}</option>`;
+        const response = await fetch(`${API_BASE_URL}/categoria`);
+        const data = await response.json();
+
+        selectUnidade.innerHTML = '<option value="">Selecione uma opção</option>';
+        selectUnidade.disabled = false;
+
+        const lista = data.categorias || data;
+        if (Array.isArray(lista)) {
+            lista.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id_categoria || cat.id;
+                option.textContent = cat.nome_categoria || cat.nome;
+                selectUnidade.appendChild(option);
             });
         }
-    } catch (erro) {
-        select.innerHTML = '<option value="">Erro ao carregar unidades</option>';
+    } catch (error) {
+        console.error('Erro ao carregar categorias/unidades:', error);
     }
 }
 
-function carregarImagem(id) {
-    const img = document.getElementById('imgProduto');
-    if (!id) {
-        img.src = SILHUETA_URL;
-        return;
-    }
-    img.src = `${URL_API}/imagens/${id}.png?t=${new Date().getTime()}`;
-    img.onerror = () => { img.src = SILHUETA_URL; };
-}
-
-function acionarUpload() {
-    if (oQueEstaFazendo !== 'inserindo' && oQueEstaFazendo !== 'alterando') {
-        mostrarAviso("Clique em Inserir ou Alterar primeiro para poder escolher uma imagem.");
-        return;
-    }
-    document.getElementById('inputImagem').click();
-}
-
-function previewImagem() {
-    const inputFiles = document.getElementById('inputImagem').files;
-    if (inputFiles.length > 0) {
-        const url = URL.createObjectURL(inputFiles[0]);
-        document.getElementById('imgProduto').src = url;
-        mostrarAviso("Imagem escolhida! Clique em Salvar para concluir.");
-    }
-}
-
-async function uploadImagemParaServidor(id) {
-    const inputFiles = document.getElementById('inputImagem').files;
-    if (inputFiles.length === 0) return;
-
-    const formData = new FormData();
-    formData.append('imagem', inputFiles[0]);
+// 2. Carrega e renderiza a lista de produtos na tabela
+async function carregarProdutos() {
+    const outputSaida = document.getElementById('outputSaida');
+    if (!outputSaida) return;
 
     try {
-        await fetch(`${URL_API}/produto/upload/${id}`, {
-            method: 'POST',
-            body: formData
-        });
-    } catch (erro) {
-        console.error("Erro ao enviar imagem:", erro);
+        const response = await fetch(`${API_BASE_URL}/produto`);
+        const data = await response.json();
+
+        const produtos = data.produtos || data;
+
+        if (Array.isArray(produtos) && produtos.length > 0) {
+            let htmlTable = `
+                <table border="1" style="width:100%; text-align:left; border-collapse: collapse; margin-top:10px;">
+                    <thead>
+                        <tr style="background-color: #f2f2f2;">
+                            <th style="padding: 8px;">ID</th>
+                            <th style="padding: 8px;">Nome</th>
+                            <th style="padding: 8px;">Estoque</th>
+                            <th style="padding: 8px;">Preço</th>
+                            <th style="padding: 8px;">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            produtos.forEach(prod => {
+                const preco = Number(prod.preco_produto || prod.preco_unitario_produto || 0).toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                });
+
+                htmlTable += `
+                    <tr>
+                        <td style="padding: 8px;">${prod.id_produto}</td>
+                        <td style="padding: 8px;">${prod.nome_produto}</td>
+                        <td style="padding: 8px;">${prod.estoque_produto ?? prod.quantidade_estoque_produto ?? 0} un.</td>
+                        <td style="padding: 8px;">${preco}</td>
+                        <td style="padding: 8px;">
+                            <button type="button" class="btn-selecionar" onclick="selecionarProduto(${prod.id_produto})">Selecionar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            htmlTable += '</tbody></table>';
+            outputSaida.innerHTML = htmlTable;
+        } else {
+            outputSaida.innerHTML = '<p>Nenhum produto cadastrado no momento.</p>';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar produtos:', error);
+        outputSaida.innerHTML = '<p style="color:red;">Erro ao carregar produtos do servidor.</p>';
     }
 }
 
-async function procurePorChavePrimaria(chave) {
-    try {
-        const resposta = await fetch(`${URL_API}/produto/${chave}`);
-        const data = await resposta.json();
-        return data.sucesso ? data.produto : null;
-    } catch (erro) {
-        return null;
-    }
-}
-
+// 3. Função de Busca pelo ID (disparada pelo botão "Procure")
 async function procure() {
-    const id_produto = document.getElementById("inputId_produto").value;
-    if (isNaN(id_produto) || !Number.isInteger(Number(id_produto)) || id_produto === "") {
-        mostrarAviso("Precisa ser um número inteiro");
+    const idInput = document.getElementById('inputId_produto');
+    const id = idInput ? idInput.value.trim() : '';
+
+    if (!id) {
+        setAviso('Por favor, digite um ID para procurar.');
         return;
     }
 
-    produto = await procurePorChavePrimaria(id_produto);
-    oQueEstaFazendo = '';
-    
-    if (produto) {
-        mostrarDadosProduto(produto);
-        carregarImagem(id_produto);
-        visibilidadeDosBotoes('inline', 'none', 'inline', 'inline', 'none');
-        mostrarAviso("Achou no banco, pode alterar ou excluir");
-    } else {
-        limparAtributos();
-        carregarImagem(null);
-        visibilidadeDosBotoes('inline', 'inline', 'none', 'none', 'none');
-        mostrarAviso("Não achou no banco, pode inserir");
+    try {
+        const response = await fetch(`${API_BASE_URL}/produto/${id}`);
+        const data = await response.json();
+
+        if (response.ok && data.sucesso && data.produto) {
+            const prod = data.produto;
+
+            // Preenche os campos do formulário
+            document.getElementById('inputNome_produto').value = prod.nome_produto || '';
+            document.getElementById('selectId_unidade_medida').value = prod.categoria_id || prod.id_unidade_medida || '';
+            document.getElementById('inputQuantidade_estoque_produto').value = prod.estoque_produto ?? prod.quantidade_estoque_produto ?? 0;
+            document.getElementById('inputPreco_unitario_produto').value = prod.preco_produto ?? prod.preco_unitario_produto ?? 0;
+
+            // Define a imagem do produto (ou padrao se nao existir)
+            const img = document.getElementById('imgProduto');
+            if (img) {
+                img.src = `${API_BASE_URL}/imagens/${prod.id_produto}.png`;
+                img.onerror = () => { img.src = `${API_BASE_URL}/imagens/silhueta.png`; };
+            }
+
+            setAviso(`Produto #${prod.id_produto} encontrado! Escolha se deseja Alterar ou Excluir.`);
+            
+            // Exibe botões Alterar e Excluir
+            mostrarBotoes({ procure: true, inserir: false, alterar: true, excluir: true, salvar: false, cancelar: true });
+            desabilitarCampos(true);
+        } else {
+            // Se não encontrou o produto, sugere Inserir um novo com esse ID
+            limparFormularioParcial();
+            setAviso(`ID #${id} não encontrado. Você pode CADASTRAR um novo produto com este ID.`);
+            mostrarBotoes({ procure: true, inserir: true, alterar: false, excluir: false, salvar: false, cancelar: true });
+        }
+    } catch (error) {
+        console.error('Erro ao buscar produto:', error);
+        setAviso('Erro de conexão ao buscar o produto.');
     }
 }
 
+// 4. Selecionar direto da tabela
+function selecionarProduto(id) {
+    document.getElementById('inputId_produto').value = id;
+    procure();
+}
+
+// 5. Ações dos Botões do CRUD
 function inserir() {
-    bloquearAtributos(false);
-    visibilidadeDosBotoes('none', 'none', 'none', 'none', 'inline');
-    oQueEstaFazendo = 'inserindo';
-    mostrarAviso("INSERINDO - Digite os atributos, escolha a imagem e clique em salvar");
+    operacaoAtual = 'inserir';
+    desabilitarCampos(false);
+    setAviso('Preencha os dados e clique em SALVAR para cadastrar.');
+    mostrarBotoes({ procure: false, inserir: false, alterar: false, excluir: false, salvar: true, cancelar: true });
 }
 
 function alterar() {
-    bloquearAtributos(false);
-    visibilidadeDosBotoes('none', 'none', 'none', 'none', 'inline');
-    oQueEstaFazendo = 'alterando';
-    mostrarAviso("ALTERANDO - Digite os atributos, mude a imagem (opcional) e clique em salvar");
+    operacaoAtual = 'alterar';
+    desabilitarCampos(false);
+    setAviso('Modifique os dados desejados e clique em SALVAR.');
+    mostrarBotoes({ procure: false, inserir: false, alterar: false, excluir: false, salvar: true, cancelar: true });
 }
 
 function excluir() {
-    bloquearAtributos(true);
-    visibilidadeDosBotoes('none', 'none', 'none', 'none', 'inline');
-    oQueEstaFazendo = 'excluindo';
-    mostrarAviso("EXCLUINDO - Clique em salvar para confirmar a exclusão");
+    operacaoAtual = 'excluir';
+    desabilitarCampos(true);
+    setAviso('Confirme se deseja realmente EXCLUIR este produto clicando em Salvar.');
+    mostrarBotoes({ procure: false, inserir: false, alterar: false, excluir: false, salvar: true, cancelar: true });
 }
-
+// 6. Salvar (POST / PUT / DELETE)
 async function salvar() {
-    let id_produto = document.getElementById("inputId_produto").value;
-    const nome_produto = document.getElementById("inputNome_produto").value;
-    const id_unidade_medida = document.getElementById("selectId_unidade_medida").value || null;
-    const quantidade_estoque_produto = parseInt(document.getElementById("inputQuantidade_estoque_produto").value) || 0;
-    const preco_unitario_produto = parseFloat(document.getElementById("inputPreco_unitario_produto").value) || 0.0;
+    const idInput = document.getElementById('inputId_produto').value.trim();
+    const nome = document.getElementById('inputNome_produto').value.trim();
+    const unidadeMedida = document.getElementById('selectId_unidade_medida').value;
+    const estoque = document.getElementById('inputQuantidade_estoque_produto').value;
+    const preco = document.getElementById('inputPreco_unitario_produto').value;
 
-    const dadosProduto = { id_produto, nome_produto, id_unidade_medida, quantidade_estoque_produto, preco_unitario_produto };
-
-    try {
-        if (oQueEstaFazendo === 'inserindo') {
-            await fetch(`${URL_API}/produto`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dadosProduto) });
-            await uploadImagemParaServidor(id_produto);
-            mostrarAviso("Inserido no Banco de Dados com sucesso!");
-        } else if (oQueEstaFazendo === 'alterando') {
-            await fetch(`${URL_API}/produto/${id_produto}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dadosProduto) });
-            await uploadImagemParaServidor(id_produto);
-            mostrarAviso("Alterado no Banco de Dados com sucesso!");
-        } else if (oQueEstaFazendo === 'excluindo') {
-            await fetch(`${URL_API}/produto/${id_produto}`, { method: 'DELETE' });
-            carregarImagem(null);
-            mostrarAviso("Excluído do Banco de Dados!");
-        }
-
-        visibilidadeDosBotoes('inline', 'none', 'none', 'none', 'none');
-        limparAtributos();
-        document.getElementById("inputId_produto").value = "";
-        listar();
-    } catch (erro) {
-        mostrarAviso("Erro ao efetuar operação no servidor.");
+    if (operacaoAtual !== 'excluir' && !nome) {
+        alert('O nome do produto é obrigatório.');
+        return;
     }
-}
 
-async function listar() {
     try {
-        const resposta = await fetch(`${URL_API}/produto/listar`);
-        const data = await resposta.json();
-        if (data.sucesso) {
-            let texto = "";
-            for (let linha of data.produtos) {
-                const um = linha.id_unidade_medida ? ` [${linha.id_unidade_medida}]` : '';
-                texto += `${linha.id_produto} - ${linha.nome_produto}${um} - Estoque: ${linha.quantidade_estoque_produto} - Preço: R$ ${parseFloat(linha.preco_unitario_produto).toFixed(2)}<br>`;
+        let res;
+        const payload = {
+            id_produto: idInput ? parseInt(idInput, 10) : null,
+            nome_produto: nome,
+            id_unidade_medida: unidadeMedida ? parseInt(unidadeMedida, 10) : null,
+            quantidade_estoque_produto: estoque !== '' ? parseInt(estoque, 10) : 0,
+            preco_unitario_produto: preco !== '' ? parseFloat(preco) : 0.0
+        };
+
+        if (operacaoAtual === 'inserir') {
+            res = await fetch(`${API_BASE_URL}/produto`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } else if (operacaoAtual === 'alterar') {
+            if (!idInput) {
+                alert('ID do produto não especificado.');
+                return;
             }
-            document.getElementById("outputSaida").innerHTML = texto || "Nenhum produto cadastrado.";
+            res = await fetch(`${API_BASE_URL}/produto/${idInput}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } else if (operacaoAtual === 'excluir') {
+            if (!idInput) {
+                alert('ID do produto não especificado para exclusão.');
+                return;
+            }
+            res = await fetch(`${API_BASE_URL}/produto/${idInput}`, {
+                method: 'DELETE'
+            });
         }
-    } catch (erro) {
-        document.getElementById("outputSaida").innerHTML = "Servidor offline.";
+
+        const data = await res.json();
+
+        if (res.ok && data.sucesso) {
+            const idParaImagem = data.produto?.id_produto || idInput;
+            const fileInput = document.getElementById('inputImagem');
+
+            // 1. Envia a imagem ANTES de cancelar e limpar os campos da tela
+            if (fileInput && fileInput.files.length > 0 && operacaoAtual !== 'excluir' && idParaImagem) {
+                await enviarImagem(idParaImagem, fileInput.files[0]);
+            }
+
+            alert(data.mensagem || 'Operação realizada com sucesso!');
+
+            // 2. Limpa o formulário e recarrega a tabela de produtos
+            cancelarOperacao();
+            carregarProdutos();
+        } else {
+            alert(data.mensagem || 'Erro ao realizar a operação no servidor.');
+        }
+    } catch (error) {
+        console.error('Erro na requisição salvar:', error);
+        alert('Erro de conexão ao tentar salvar o produto.');
     }
 }
 
+// 7. Auxiliar para Envio de Imagem
+async function enviarImagem(idProduto, file) {
+    const formData = new FormData();
+    formData.append('imagem', file);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/produto/upload/${idProduto}`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.sucesso) {
+            console.error('Erro ao salvar a imagem no servidor:', data.mensagem);
+            alert('Produto salvo, mas ocorreu um erro ao salvar a imagem.');
+        }
+    } catch (err) {
+        console.error('Erro no upload da imagem:', err);
+    }
+}
+// 8. Funções de Controle de Interface (Exibição de Botões e Estado)
 function cancelarOperacao() {
-    limparAtributos();
-    carregarImagem(null);
-    bloquearAtributos(true);
-    visibilidadeDosBotoes('inline', 'none', 'none', 'none', 'none');
-    mostrarAviso("Cancelou a operação");
+    operacaoAtual = null;
+    limparFormularioCompleto();
+    desabilitarCampos(true);
+    setAviso('Informe o ID e clique em Procure');
+    mostrarBotoes({ procure: true, inserir: false, alterar: false, excluir: false, salvar: false, cancelar: false });
 }
 
-function mostrarAviso(mensagem) {
-    document.getElementById("divAviso").innerHTML = mensagem;
+function mostrarBotoes({ procure, inserir, alterar, excluir, salvar, cancelar }) {
+    setDisp('btProcure', procure);
+    setDisp('btInserir', inserir);
+    setDisp('btAlterar', alterar);
+    setDisp('btExcluir', excluir);
+    setDisp('btSalvar', salvar);
+    setDisp('btCancelar', cancelar);
 }
 
-function mostrarDadosProduto(p) {
-    document.getElementById("inputId_produto").value = p.id_produto;
-    document.getElementById("inputNome_produto").value = p.nome_produto;
-    document.getElementById("selectId_unidade_medida").value = p.id_unidade_medida || "";
-    document.getElementById("inputQuantidade_estoque_produto").value = p.quantidade_estoque_produto;
-    document.getElementById("inputPreco_unitario_produto").value = p.preco_unitario_produto;
-    bloquearAtributos(true);
+function setDisp(id, visivel) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = visivel ? 'inline-block' : 'none';
 }
 
-function limparAtributos() {
-    produto = null;
-    oQueEstaFazendo = '';
-    document.getElementById("inputNome_produto").value = "";
-    document.getElementById("selectId_unidade_medida").value = "";
-    document.getElementById("inputQuantidade_estoque_produto").value = "";
-    document.getElementById("inputPreco_unitario_produto").value = "";
-    document.getElementById("inputImagem").value = "";
-    bloquearAtributos(true);
+function desabilitarCampos(status) {
+    const campos = ['inputNome_produto', 'selectId_unidade_medida', 'inputQuantidade_estoque_produto', 'inputPreco_unitario_produto'];
+    campos.forEach(cId => {
+        const el = document.getElementById(cId);
+        if (el) el.disabled = status;
+    });
 }
 
-function bloquearAtributos(soLeitura) {
-    document.getElementById("inputId_produto").readOnly = !soLeitura;
-    document.getElementById("inputNome_produto").readOnly = soLeitura;
-    document.getElementById("selectId_unidade_medida").disabled = soLeitura;
-    document.getElementById("inputQuantidade_estoque_produto").readOnly = soLeitura;
-    document.getElementById("inputPreco_unitario_produto").readOnly = soLeitura;
+function limparFormularioParcial() {
+    document.getElementById('inputNome_produto').value = '';
+    document.getElementById('selectId_unidade_medida').value = '';
+    document.getElementById('inputQuantidade_estoque_produto').value = '';
+    document.getElementById('inputPreco_unitario_produto').value = '';
 }
 
-function visibilidadeDosBotoes(btP, btI, btA, btE, btS) {
-    document.getElementById("btProcure").style.display = btP;
-    document.getElementById("btInserir").style.display = btI;
-    document.getElementById("btAlterar").style.display = btA;
-    document.getElementById("btExcluir").style.display = btE;
-    document.getElementById("btSalvar").style.display = btS;
-    document.getElementById("btCancelar").style.display = btS;
+function limparFormularioCompleto() {
+    document.getElementById('inputId_produto').value = '';
+    
+    // Limpa a seleção do arquivo de imagem
+    const fileInput = document.getElementById('inputImagem');
+    if (fileInput) fileInput.value = '';
+
+    limparFormularioParcial();
+    
+    const img = document.getElementById('imgProduto');
+    if (img) img.src = `${API_BASE_URL}/imagens/silhueta.png`;
 }
+
+function setAviso(texto) {
+    const divAviso = document.getElementById('divAviso');
+    if (divAviso) divAviso.innerText = texto;
+}
+
+// Funções para Upload e Preview da Imagem
+function acionarUpload() {
+    const fileInput = document.getElementById('inputImagem');
+    if (fileInput) fileInput.click();
+}
+
+function previewImagem() {
+    const fileInput = document.getElementById('inputImagem');
+    const img = document.getElementById('imgProduto');
+    if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => { img.src = e.target.result; };
+        reader.readAsDataURL(fileInput.files[0]);
+    }
+}
+
+// Função para carregar as categorias na tag <select id="selectId_unidade_medida"> ou <select id="selectId_categoria">
+async function carregarCategoriasNoSelect() {
+    const selectCat = document.getElementById('selectId_unidade_medida') || document.getElementById('selectId_categoria');
+    if (!selectCat) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/categoria`);
+        const data = await response.json();
+        const categorias = data.categorias || data;
+
+        selectCat.innerHTML = '<option value="">Selecione uma categoria...</option>';
+
+        if (Array.isArray(categorias)) {
+            categorias.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id_categoria;
+                option.textContent = cat.nome_categoria;
+                selectCat.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar categorias no select:', error);
+    }
+}
+
+// Chame essa função ao carregar a página
+document.addEventListener('DOMContentLoaded', () => {
+    carregarCategoriasNoSelect();
+    carregarProdutos();
+});

@@ -1,19 +1,20 @@
 const express = require('express');
 const multer = require('multer');
 const router = express.Router();
+
+// Importação do Controller
 const produtoController = require('../controllers/produtoController');
 
-// Configura o Multer para armazenar em memória temporária para o Sharp processar
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Rotas do CRUD de Produtos
-router.get('/listar', produtoController.listarProdutos);
+// Certifique-se de que cada controller existe no produtoController.js
+router.get('/', produtoController.listarProdutos);
 router.get('/:id', produtoController.obterProduto);
 router.post('/', produtoController.criarProduto);
 router.put('/:id', produtoController.atualizarProduto);
 router.delete('/:id', produtoController.deletarProduto);
 
-// Rota para upload da imagem
+// Upload de imagem
 router.post('/upload/:id', upload.single('imagem'), produtoController.uploadImagem);
 
 module.exports = router;

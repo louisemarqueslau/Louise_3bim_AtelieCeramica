@@ -1,154 +1,104 @@
--- ============================================
--- 1. LIMPEZA (CASO PRECISE RECRIAR O BANCO)
--- ============================================
-DROP TABLE IF EXISTS public.pagamento CASCADE;
-DROP TABLE IF EXISTS public.pedido_item CASCADE;
-DROP TABLE IF EXISTS public.pedido CASCADE;
-DROP TABLE IF EXISTS public.produto CASCADE;
-DROP TABLE IF EXISTS public.categoria CASCADE;
-DROP TABLE IF EXISTS public.unidade_medida CASCADE;
-DROP TABLE IF EXISTS public.funcionario CASCADE;
-DROP TABLE IF EXISTS public.cliente CASCADE;
-DROP TABLE IF EXISTS public.pessoa CASCADE;
-DROP TABLE IF EXISTS public.perfil CASCADE;
-DROP TABLE IF EXISTS public.cargo CASCADE;
-DROP TABLE IF EXISTS public.forma_pagamento CASCADE;
+-- =============================================
+-- 1. LIMPEZA DE TABELAS ANTIGAS (DROP CASCADE)
+-- =============================================
+DROP TABLE IF EXISTS clientes CASCADE;
+DROP TABLE IF EXISTS funcionarios CASCADE;
+DROP TABLE IF EXISTS pessoas CASCADE;
+DROP TABLE IF EXISTS cargos CASCADE;
+DROP TABLE IF EXISTS produtos CASCADE;
+DROP TABLE IF EXISTS categorias CASCADE;
 
--- ============================================
--- 2. CRIAÇÃO DAS TABELAS INDEPENDENTES
--- ============================================
+-- =============================================
+-- 2. CRIAÇÃO DAS TABELAS
+-- =============================================
 
--- Tabela de Cargos dos Funcionários
-CREATE TABLE public.cargo (
-    id_cargo SERIAL PRIMARY KEY,
-    nome_cargo VARCHAR(45) NOT NULL
-);
-
--- Tabela de Unidades de Medida dos Produtos
-CREATE TABLE public.unidade_medida (
-    id_unidade_medida VARCHAR(5) PRIMARY KEY,
-    nome_unidade_medida VARCHAR(30) NOT NULL
-);
-
--- Tabela de Categorias dos Produtos
-CREATE TABLE public.categoria (
+-- Tabela Categorias
+CREATE TABLE categorias (
     id_categoria SERIAL PRIMARY KEY,
-    nome_categoria VARCHAR(50) NOT NULL,
+    nome_categoria VARCHAR(100) NOT NULL,
     descricao_categoria TEXT
 );
 
--- Tabela de Formas de Pagamento
-CREATE TABLE public.forma_pagamento (
-    id_forma_pagamento SERIAL PRIMARY KEY,
-    nome_forma_pagamento VARCHAR(50) NOT NULL
-);
-
--- Tabela de Perfis/Níveis de Acesso para Login
-CREATE TABLE public.perfil (
-    id_perfil SERIAL PRIMARY KEY,
-    nome_perfil VARCHAR(30) NOT NULL -- ex: 'ADMIN', 'FUNCIONARIO', 'CLIENTE'
-);
-
--- ============================================
--- 3. CRIAÇÃO DAS TABELAS COM DEPENDÊNCIAS
--- ============================================
-
--- Tabela Geral de Pessoas (Dados Pessoais e Autenticação)
-CREATE TABLE public.pessoa (
-    cpf_pessoa VARCHAR(20) PRIMARY KEY,
-    nome_pessoa VARCHAR(60) NOT NULL,
-    data_nascimento_pessoa DATE,
-    endereco_pessoa VARCHAR(150),
-    email_pessoa VARCHAR(75) UNIQUE NOT NULL,
-    senha_pessoa VARCHAR(255) NOT NULL, -- Recomendado guardar Hash
-    id_perfil INTEGER REFERENCES public.perfil(id_perfil)
-);
-
--- Tabela de Clientes
-CREATE TABLE public.cliente (
-    pessoa_cpf_pessoa VARCHAR(20) PRIMARY KEY REFERENCES public.pessoa(cpf_pessoa) ON DELETE CASCADE,
-    renda_cliente DOUBLE PRECISION DEFAULT 0.0,
-    data_cadastro_cliente DATE DEFAULT CURRENT_DATE
-);
-
--- Tabela de Funcionários
-CREATE TABLE public.funcionario (
-    pessoa_cpf_pessoa VARCHAR(20) PRIMARY KEY REFERENCES public.pessoa(cpf_pessoa) ON DELETE CASCADE,
-    salario_funcionario DOUBLE PRECISION DEFAULT 0.0,
-    porcentagem_comissao DOUBLE PRECISION DEFAULT 0.0,
-    cargo_id_cargo INTEGER REFERENCES public.cargo(id_cargo)
-);
-
--- Tabela de Produtos (com Categoria e Unidade de Medida)
-CREATE TABLE public.produto (
+-- Tabela Produtos
+CREATE TABLE produtos (
     id_produto SERIAL PRIMARY KEY,
-    nome_produto VARCHAR(60) NOT NULL,
-    quantidade_estoque INTEGER DEFAULT 0,
-    preco_unitario DOUBLE PRECISION NOT NULL,
-    id_unidade_medida VARCHAR(5) REFERENCES public.unidade_medida(id_unidade_medida),
-    id_categoria INTEGER REFERENCES public.categoria(id_categoria) ON DELETE SET NULL
+    categoria_id INT NOT NULL,
+    nome_produto VARCHAR(150) NOT NULL,
+    descricao_produto TEXT,
+    preco_produto DECIMAL(10, 2) NOT NULL,
+    estoque_produto INT DEFAULT 0,
+    imagem_url VARCHAR(255),
+    CONSTRAINT fk_categoria FOREIGN KEY (categoria_id) REFERENCES categorias(id_categoria) ON DELETE CASCADE
 );
 
--- Tabela de Pedidos
-CREATE TABLE public.pedido (
-    id_pedido SERIAL PRIMARY KEY,
-    data_pedido TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    cliente_cpf VARCHAR(20) REFERENCES public.cliente(pessoa_cpf_pessoa),
-    funcionario_cpf VARCHAR(20) REFERENCES public.funcionario(pessoa_cpf_pessoa)
+-- Tabela Cargos
+CREATE TABLE cargos (
+    id_cargo SERIAL PRIMARY KEY,
+    nome_cargo VARCHAR(100) NOT NULL,
+    descricao_cargo TEXT
 );
 
--- Tabela de Itens do Pedido (Relacionamento N:M)
-CREATE TABLE public.pedido_item (
-    id_pedido INTEGER REFERENCES public.pedido(id_pedido) ON DELETE CASCADE,
-    id_produto INTEGER REFERENCES public.produto(id_produto),
-    quantidade INTEGER NOT NULL,
-    preco_unitario DOUBLE PRECISION NOT NULL,
-    PRIMARY KEY (id_pedido, id_produto)
+-- Tabela Pessoas
+CREATE TABLE pessoas (
+    cpf_pessoa VARCHAR(20) PRIMARY KEY,
+    nome_pessoa VARCHAR(150) NOT NULL,
+    email_pessoa VARCHAR(150) NOT NULL UNIQUE,
+    data_nascimento_pessoa DATE,
+    senha_pessoa VARCHAR(255) NOT NULL,
+    endereco_pessoa VARCHAR(255) NOT NULL
 );
 
--- Tabela de Pagamentos
-CREATE TABLE public.pagamento (
-    id_pedido INTEGER REFERENCES public.pedido(id_pedido) ON DELETE CASCADE,
-    id_forma_pagamento INTEGER REFERENCES public.forma_pagamento(id_forma_pagamento),
-    valor_pago DOUBLE PRECISION NOT NULL,
-    data_pagamento TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_pedido, id_forma_pagamento)
+-- Tabela Funcionários
+CREATE TABLE funcionarios (
+    pessoa_cpf_pessoa VARCHAR(20) PRIMARY KEY,
+    cargo_id_cargo INT,
+    salario_funcionario DECIMAL(10, 2),
+    porcentagem_comissao_funcionario VARCHAR(20),
+    CONSTRAINT fk_pessoa_funcionario FOREIGN KEY (pessoa_cpf_pessoa) REFERENCES pessoas(cpf_pessoa) ON DELETE CASCADE,
+    CONSTRAINT fk_cargo_funcionario FOREIGN KEY (cargo_id_cargo) REFERENCES cargos(id_cargo) ON DELETE SET NULL
 );
 
--- ============================================
--- 4. INSERTS DE INICIALIZAÇÃO (DADOS PADRÃO)
--- ============================================
+-- Tabela Clientes
+CREATE TABLE clientes (
+    pessoa_cpf_pessoa VARCHAR(20) PRIMARY KEY,
+    renda_cliente DECIMAL(10, 2),
+    data_cadastro_cliente DATE,
+    CONSTRAINT fk_pessoa_cliente FOREIGN KEY (pessoa_cpf_pessoa) REFERENCES pessoas(cpf_pessoa) ON DELETE CASCADE
+);
 
--- Perfis de Acesso
-INSERT INTO public.perfil (nome_perfil) VALUES ('ADMIN'), ('FUNCIONARIO'), ('CLIENTE');
+-- =============================================
+-- 3. INSERTS DE TESTE
+-- =============================================
 
--- Unidades de Medida
-INSERT INTO public.unidade_medida VALUES ('UN', 'Unidade'), ('KG', 'Quilograma'), ('L', 'Litro'), ('CX', 'Caixa'), ('PC', 'Pacote');
+-- Categorias
+INSERT INTO categorias (id_categoria, nome_categoria, descricao_categoria) VALUES
+(1, 'Canecas e Xícaras', 'Peças utilitárias para bebidas quentes e frias, feitas em torno e modelagem manual.'),
+(2, 'Pratos e Travessas', 'Utensílios para servir refeições com acabamento esmaltado atóxico.'),
+(3, 'Vasos e Cachepôs', 'Peças decorativas para plantas e arranjos florais com texturas únicas.'),
+(4, 'Decoração', 'Esculturas, incensários e objetos ornamentais moldados à mão.');
 
--- Categorias Exemplo
-INSERT INTO public.categoria (nome_categoria, descricao_categoria) VALUES 
-('Doces & Confeitaria', 'Bolos, Pães de Mel, Doces Variados'),
-('Bebidas', 'Refrigerantes, Sucos e Águas'),
-('Salgados', 'Coxinhas, Empadas e Assados');
+-- Sincroniza o autoincremento (SERIAL) das categorias para não dar erro ao cadastrar pelo site
+SELECT setval('categorias_id_categoria_seq', (SELECT MAX(id_categoria) FROM categorias));
 
--- Formas de Pagamento
-INSERT INTO public.forma_pagamento (nome_forma_pagamento) VALUES 
-('Dinheiro'), ('Pix'), ('Cartão de Crédito'), ('Cartão de Débito');
+-- Produtos
+INSERT INTO produtos (categoria_id, nome_produto, descricao_produto, preco_produto, estoque_produto, imagem_url) VALUES
+(1, 'Caneca Rústica Sálvia', 'Caneca em cerâmica de alta temperatura com esmalte reativo tom verde-sálvia.', 68.00, 12, 'https://exemplo.com/imagens/caneca-salvia.jpg'),
+(1, 'Xícara de Café Espaço', 'Xícara pequena para café expresso com textura áspera por fora e esmaltada por dentro.', 42.50, 20, 'https://exemplo.com/imagens/xicara-espaco.jpg'),
+(2, 'Prato Raso Texturizado', 'Prato de refeição com bordas irregulares e acabamento mate acetinado.', 85.00, 8, 'https://exemplo.com/imagens/prato-raso.jpg'),
+(2, 'Bowl Botânico', 'Tigela média para sopas e saladas, com decalque foliar gravado na argila.', 74.90, 15, 'https://exemplo.com/imagens/bowl-botanico.jpg'),
+(3, 'Vaso Escultural Orgânico', 'Vaso alto para flores secas com formato assimétrico e acabamento natural sem esmalte.', 140.00, 4, 'https://exemplo.com/imagens/vaso-organico.jpg'),
+(3, 'Cachepô Mini Terra Cota', 'Pequeno cachepô para suculentas e cactos com furo de drenagem.', 35.00, 25, 'https://exemplo.com/imagens/cachepo-terracota.jpg'),
+(4, 'Incensário Folha', 'Porta-incenso em formato de folha natural com detalhe em esmalte branco rústico.', 29.90, 18, 'https://exemplo.com/imagens/incensario-folha.jpg');
 
--- Cargos
-INSERT INTO public.cargo (nome_cargo) VALUES ('Gerente'), ('Atendente'), ('Caixa');
+-- Sincroniza o autoincremento (SERIAL) dos produtos
+SELECT setval('produtos_id_produto_seq', (SELECT MAX(id_produto) FROM produtos));
 
--- Pessoa / Usuário Admin Exemplo (Senha: 123456)
-INSERT INTO public.pessoa (cpf_pessoa, nome_pessoa, data_nascimento_pessoa, endereco_pessoa, email_pessoa, senha_pessoa, id_perfil) 
-VALUES ('00000000000', 'Administrador da Loja', '1990-01-01', 'Rua Principal, 100', 'admin@loja.com', '123456', 1);
+-- Pessoas
+INSERT INTO pessoas (cpf_pessoa, nome_pessoa, email_pessoa, data_nascimento_pessoa, senha_pessoa, endereco_pessoa) VALUES
+('123.456.789-00', 'Ana Clara Souza', 'ana.clara@email.com', '1995-05-20', '123456', 'Rua das Flores, 123'),
+('987.654.321-11', 'Bruno Oliveira', 'bruno.oliveira@email.com', '1988-11-10', '123456', 'Av. Central, 456');
 
--- Inserindo o Admin como Funcionário Gerente
-INSERT INTO public.funcionario (pessoa_cpf_pessoa, salario_funcionario, porcentagem_comissao, cargo_id_cargo)
-VALUES ('00000000000', 3500.00, 5.0, 1);
-
--- Produtos Iniciais
-INSERT INTO public.produto (nome_produto, quantidade_estoque, preco_unitario, id_unidade_medida, id_categoria) VALUES
-('Pão de Mel', 40, 6.50, 'UN', 1),
-('Doce de Leite', 30, 12.00, 'UN', 1),
-('Refrigerante 2L', 50, 8.50, 'UN', 2),
-('Biscoito Amanteigado', 80, 4.50, 'PC', 1);
+-- Clientes
+INSERT INTO clientes (pessoa_cpf_pessoa, renda_cliente, data_cadastro_cliente) VALUES
+('123.456.789-00', 3500.00, '2024-01-15'),
+('987.654.321-11', 5000.00, '2024-02-10');
