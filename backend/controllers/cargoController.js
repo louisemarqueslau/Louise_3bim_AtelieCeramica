@@ -25,7 +25,6 @@ exports.criarCargo = async (req, res) => {
   try {
     const { id_cargo, nome_cargo } = req.body;
 
-    // Validação básica
     if (!nome_cargo || nome_cargo.trim() === '') {
       return res.status(400).json({
         sucesso: false,
@@ -35,7 +34,6 @@ exports.criarCargo = async (req, res) => {
 
     let result;
 
-    // Se o ID for fornecido manualmente, insere com o ID; caso contrário, deixa a chave primária auto-incrementar (SERIAL)
     if (id_cargo) {
       result = await query(
         'INSERT INTO cargo (id_cargo, nome_cargo) VALUES ($1, $2) RETURNING *',
@@ -48,6 +46,9 @@ exports.criarCargo = async (req, res) => {
       );
     }
 
+    // Sincroniza a sequência para não dar erro de ID duplicado futuramente
+    await query("SELECT setval('cargo_id_cargo_seq', (SELECT MAX(id_cargo) FROM cargo))");
+
     res.status(201).json({
       sucesso: true,
       mensagem: 'Cargo criado com sucesso!',
@@ -55,6 +56,7 @@ exports.criarCargo = async (req, res) => {
     });
   } catch (error) {
     console.error('Erro ao criar cargo:', error);
+    // ... resto dos erros continua igual
 
     // Violação de Chave Única (ex: ID ou nome já existente)
     if (error.code === '23505') {
