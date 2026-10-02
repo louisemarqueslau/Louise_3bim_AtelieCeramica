@@ -148,4 +148,3 @@ exports.deletarCliente = async (req, res) => {
     res.status(500).json({ sucesso: false, mensagem: 'Erro interno do servidor ao tentar excluir o cliente.' });
   }
 };
-

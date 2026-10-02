@@ -128,26 +128,16 @@ INSERT INTO pessoas (cpf_pessoa, nome_pessoa, email_pessoa, data_nascimento_pess
 ('666.777.888-99', 'Isabela Rocha', 'isabela.rocha@email.com', '1998-04-12', '123456', 'Praça Central, 15'),
 ('777.888.999-00', 'João Pedro Alves', 'joao.pedro@email.com', '1993-06-22', '123456', 'Rua Primavera, 404');
 
--- 10 Funcionários
+-- 5 Funcionários vinculados às 5 primeiras pessoas
 INSERT INTO funcionarios (pessoa_cpf_pessoa, cargo_id_cargo, salario_funcionario, porcentagem_comissao_funcionario) VALUES
 ('123.456.789-00', 1, 4500.00, '5%'),
 ('987.654.321-11', 2, 2200.00, '3%'),
 ('111.222.333-44', 3, 3800.00, '0%'),
 ('555.666.777-88', 4, 3200.00, '0%'),
-('999.888.777-66', 5, 3000.00, '2%'),
-('222.333.444-55', 6, 4200.00, '0%'),
-('333.444.555-66', 7, 1800.00, '0%'),
-('444.555.666-77', 8, 3500.00, '4%'),
-('666.777.888-99', 9, 2800.00, '0%'),
-('777.888.999-00', 10, 2000.00, '1%');
+('999.888.777-66', 5, 3000.00, '2%');
 
--- 10 Clientes (Pessoas cadastradas como clientes)
+-- 5 Clientes vinculados às outras 5 pessoas
 INSERT INTO clientes (pessoa_cpf_pessoa, renda_cliente, data_cadastro_cliente) VALUES
-('123.456.789-00', 3500.00, '2024-01-15'),
-('987.654.321-11', 5000.00, '2024-02-10'),
-('111.222.333-44', 4200.00, '2024-02-15'),
-('555.666.777-88', 6100.00, '2024-03-01'),
-('999.888.777-66', 8500.00, '2024-03-12'),
 ('222.333.444-55', 2900.00, '2024-03-20'),
 ('333.444.555-66', 3800.00, '2024-04-05'),
 ('444.555.666-77', 7200.00, '2024-04-18'),
