@@ -117,7 +117,7 @@ SELECT setval('cargo_id_cargo_seq', (SELECT MAX(id_cargo) FROM cargo));
 
 -- 10 Pessoas
 INSERT INTO pessoas (cpf_pessoa, nome_pessoa, email_pessoa, data_nascimento_pessoa, senha_pessoa, endereco_pessoa) VALUES
-('123.456.789-00', 'Ana Clara Souza', 'ana.clara@email.com', '1995-05-20', '123456', 'Rua das Flores, 123'),
+('7', 'Ana Clara Souza', 'ana.clara@email.com', '1995-05-20', '123456', 'Rua das Flores, 123'),
 ('987.654.321-11', 'Bruno Oliveira', 'bruno.oliveira@email.com', '1988-11-10', '123456', 'Av. Central, 456'),
 ('111.222.333-44', 'Carla Mendes', 'carla.mendes@email.com', '1992-03-15', '123456', 'Rua Sol, 789'),
 ('555.666.777-88', 'Diego Santos', 'diego.santos@email.com', '1990-08-25', '123456', 'Rua Lua, 321'),
@@ -130,7 +130,7 @@ INSERT INTO pessoas (cpf_pessoa, nome_pessoa, email_pessoa, data_nascimento_pess
 
 -- 5 Funcionários vinculados às 5 primeiras pessoas
 INSERT INTO funcionarios (pessoa_cpf_pessoa, cargo_id_cargo, salario_funcionario, porcentagem_comissao_funcionario) VALUES
-('123.456.789-00', 1, 4500.00, '5%'),
+('7', 1, 4500.00, '5%'),
 ('987.654.321-11', 2, 2200.00, '3%'),
 ('111.222.333-44', 3, 3800.00, '0%'),
 ('555.666.777-88', 4, 3200.00, '0%'),
